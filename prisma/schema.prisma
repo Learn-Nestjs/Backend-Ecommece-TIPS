@@ -28,4 +28,13 @@ model shopSchema {
   status ShopStatus @default(INACTIVE)
   verify Boolean @default(false)
   roles UserRoleType[] @default([])
+  keyToken keyToken ?
+}
+
+model keyToken {
+  id String @id @default(auto()) @db.ObjectId @map("_id")
+  shop  shopSchema @relation(fields: [shopId], references: [id])
+  shopId String @db.ObjectId @unique
+  publicKey String @unique
+  refreshToken String[] @default([])
 }

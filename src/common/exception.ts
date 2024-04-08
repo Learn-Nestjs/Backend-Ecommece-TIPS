@@ -7,3 +7,9 @@ export class NotFoundException extends HttpException {
     super('Recource Not Found', HttpStatus.NOT_FOUND);
   }
 }
+
+export class ConflictException extends HttpException {
+  constructor(message: 'Conflict'){
+    super(message, HttpStatus.CONFLICT)
+  }
+}

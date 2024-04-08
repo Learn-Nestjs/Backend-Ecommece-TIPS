@@ -42,10 +42,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
       '';
 
     fs.appendFileSync('loggingSystem.txt', messageLogging);
-    // fs.appendFileSync(
-    //   'https://docs.google.com/document/d/1t_DyPR39WwFhE5pq7BLqHRmxDYuIrQMqx5bq1cNvgSg/edit?usp=sharing',
-    //   messageLogging,
-    // );
 
     response.status(status).json({
       message,
