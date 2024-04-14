@@ -9,7 +9,14 @@ export class NotFoundException extends HttpException {
 }
 
 export class ConflictException extends HttpException {
-  constructor(message: 'Conflict'){
+  constructor(message = 'Conflict'){
     super(message, HttpStatus.CONFLICT)
+  }
+}
+
+
+export class ServerError extends HttpException {
+  constructor(message = "Something went wrong") {
+    super(message, HttpStatus.INTERNAL_SERVER_ERROR)
   }
 }

@@ -35,6 +35,7 @@ model keyToken {
   id String @id @default(auto()) @db.ObjectId @map("_id")
   shop  shopSchema @relation(fields: [shopId], references: [id])
   shopId String @db.ObjectId @unique
-  publicKey String @unique
+  keyAccess String 
+  keyRefresh String 
   refreshToken String[] @default([])
 }
