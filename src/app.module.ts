@@ -8,6 +8,8 @@ import { TransformInterceptor } from './common/transform.interceptor';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { GoogleAuthModule } from './google-auth/google-auth.module';
+import { ShopSchemaModule } from './shop-schema/shop-schema.module';
+import { KeyTokenModule } from './key-token/key-token.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { GoogleAuthModule } from './google-auth/google-auth.module';
         process.env.NODE_ENV == 'production' ? './production.env' : './dev.env',
     }),
     GoogleAuthModule,
+    ShopSchemaModule,
+    KeyTokenModule,
   ],
   controllers: [AppController],
   providers: [

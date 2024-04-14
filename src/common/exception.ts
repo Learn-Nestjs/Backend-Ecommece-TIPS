@@ -7,3 +7,16 @@ export class NotFoundException extends HttpException {
     super('Recource Not Found', HttpStatus.NOT_FOUND);
   }
 }
+
+export class ConflictException extends HttpException {
+  constructor(message = 'Conflict'){
+    super(message, HttpStatus.CONFLICT)
+  }
+}
+
+
+export class ServerError extends HttpException {
+  constructor(message = "Something went wrong") {
+    super(message, HttpStatus.INTERNAL_SERVER_ERROR)
+  }
+}

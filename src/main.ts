@@ -1,7 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { LoggerService } from './logger/logger.service';
-import { ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -19,16 +20,34 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       // disableErrorMessages: true, // not console.log()
-      whitelist: true, // just get all property defined in dto class, other property is remove
+      // whitelist: true, // just get all property defined in dto class, other property is remove
       transform: true, // convert object form req to exaclly data defined in dto
     }),
   );
 
+  // prefix
+
+  app.setGlobalPrefix('/v1/api', {
+    exclude: [
+      // { path: 'cat', method: RequestMethod.GET }
+      // exclude routes from the global prefix using the following construction
+    ],
+  });
+
+  // swagger
+
+  const config = new DocumentBuilder()
+    .setTitle('API Visualizations')
+    .setDescription('The project API description')
+    .setVersion('1.0')
+    .addTag('Api Project')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+
   // cath all exception http error
 
   // app.useGlobalFilters(new HttpExceptionFilter())
-
-  console.log('process.env.PORT :', process.env.PORT)
 
   await app.listen(process.env.PORT || 3055);
 }

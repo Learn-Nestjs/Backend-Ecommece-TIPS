@@ -10,10 +10,32 @@ datasource db {
 }
 
 
-model User {
+enum ShopStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum UserRoleType {
+  SELLER
+  BUYER
+}
+
+model shopSchema {
   id String @id @default(auto()) @db.ObjectId @map("_id")
+  name String 
   email String @unique
-  password String
-  isVerify Boolean @default(false)
-  @@map("user")
+  password String 
+  status ShopStatus @default(INACTIVE)
+  verify Boolean @default(false)
+  roles UserRoleType[] @default([])
+  keyToken keyToken ?
+}
+
+model keyToken {
+  id String @id @default(auto()) @db.ObjectId @map("_id")
+  shop  shopSchema @relation(fields: [shopId], references: [id])
+  shopId String @db.ObjectId @unique
+  keyAccess String 
+  keyRefresh String 
+  refreshToken String[] @default([])
 }

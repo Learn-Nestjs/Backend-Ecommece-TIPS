@@ -30,6 +30,8 @@
 
 ```bash
 $ yarn install
+## config file dev.env family file example.env
+$ yarn migrate:dev
 ```
 
 ## Running the app
