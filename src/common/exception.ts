@@ -1,6 +1,6 @@
 // defined common exception in here
 
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, ForbiddenException} from '@nestjs/common';
 
 export class NotFoundException extends HttpException {
   constructor() {
@@ -14,6 +14,11 @@ export class ConflictException extends HttpException {
   }
 }
 
+export class Forbidden extends HttpException {
+  constructor(message = "Forbidden") {
+    super(message, HttpStatus.FORBIDDEN)
+  }
+}
 
 export class ServerError extends HttpException {
   constructor(message = "Something went wrong") {
