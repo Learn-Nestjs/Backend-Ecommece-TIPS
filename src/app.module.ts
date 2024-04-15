@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerModule } from './logger/logger.module';
@@ -10,6 +10,8 @@ import { ConfigModule } from '@nestjs/config';
 import { GoogleAuthModule } from './google-auth/google-auth.module';
 import { ShopSchemaModule } from './shop-schema/shop-schema.module';
 import { KeyTokenModule } from './key-token/key-token.module';
+import configuration from './config/configuration';
+import { ApiKeyMiddleware } from './common/middleware/api-key.middleware';
 
 @Module({
   imports: [
@@ -19,6 +21,7 @@ import { KeyTokenModule } from './key-token/key-token.module';
       isGlobal: true,
       envFilePath:
         process.env.NODE_ENV == 'production' ? './production.env' : './dev.env',
+      load: [configuration],
     }),
     GoogleAuthModule,
     ShopSchemaModule,
@@ -37,4 +40,10 @@ import { KeyTokenModule } from './key-token/key-token.module';
     AppService,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(ApiKeyMiddleware)
+      .forRoutes('*');
+  }
+}

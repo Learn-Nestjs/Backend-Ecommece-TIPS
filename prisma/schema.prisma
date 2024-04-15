@@ -20,6 +20,12 @@ enum UserRoleType {
   BUYER
 }
 
+enum Permissions {
+  ALL
+  SELL
+  SHOPPING
+}
+
 model shopSchema {
   id String @id @default(auto()) @db.ObjectId @map("_id")
   name String 
@@ -38,4 +44,12 @@ model keyToken {
   keyAccess String 
   keyRefresh String 
   refreshToken String[] @default([])
+}
+
+
+model apiKey {
+  id String @id @default(auto()) @db.ObjectId @map("_id")
+  key String @unique
+  status Boolean @default(true)
+  permissions Permissions[]
 }
