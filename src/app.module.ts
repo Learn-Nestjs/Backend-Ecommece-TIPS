@@ -44,7 +44,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(ApiKeyMiddleware)
-      .exclude('/shop-schema/sign-up')
+      .exclude('/shop-schema/sign-in')
       .forRoutes('*')
       ;
   }

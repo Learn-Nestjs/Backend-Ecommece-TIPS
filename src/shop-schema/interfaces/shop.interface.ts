@@ -3,3 +3,4 @@ export interface ISignUp {
     email: string;
     password: string;
   }
+export interface ISignIn extends Pick<ISignUp, "email" | "password"> {}

@@ -1,6 +1,6 @@
-import { ConflictException, HttpException, Injectable } from '@nestjs/common';
+import { ConflictException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ISignUp } from './interfaces/shop.interface';
+import { ISignIn, ISignUp } from './interfaces/shop.interface';
 import { KeyToken } from 'src/key-token/key-token';
 import { getObjectWithKey } from 'src/common/libs';
 import * as crypto from 'crypto';
@@ -53,5 +53,13 @@ export class shopSchemaService {
       accessToken,
       refreshToken
     }
+  }
+
+  async signIn(data: ISignIn) {
+    const shop = await this.prismaService.shopSchema.findUnique({where: {email: data.email}})
+    if(!shop) throw new NotFoundException();
+    const match = await bcrypt.compare(data.password, shop.password)
+    if(!match) throw new NotFoundException('Your password or Email is incorrect')
+    
   }
 }
