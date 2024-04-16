@@ -11,7 +11,7 @@ export class shopSchemaService {
   constructor(
     private prismaService: PrismaService,
     private keyToken: KeyToken,
-  ) {}
+  ) { }
 
   async signUp(data: ISignUp) {
     const holderShop = await this.prismaService.shopSchema.findFirst({
@@ -31,21 +31,24 @@ export class shopSchemaService {
       }
     });
 
-    if(!shop) throw new ServerError('Create shop fail')
+    if (!shop) throw new ServerError('Create shop fail')
 
     const keyAccess = await crypto.randomBytes(64).toString('hex');
     const keyRefresh = await crypto.randomBytes(64).toString('hex');
 
-    const keyToken = await this.keyToken.createKeyToken({
+    const { accessToken, refreshToken } = await this.keyToken.generateTokenPair({
+      payload: { id: shop.id, email: shop.email },
+      keyAccess,
+      keyRefresh
+    });
+
+    await this.keyToken.createKeyToken({
       shopId: shop.id,
       keyAccess,
       keyRefresh,
+      refreshToken
     });
-    const {accessToken, refreshToken} =  await this.keyToken.generateTokenPair({
-      payload: { id: shop.id, email: shop.email },
-      keyAccess: keyToken.keyAccess,
-      keyRefresh: keyToken.keyRefresh,
-    });
+
 
     const shopData = getObjectWithKey(shop, ["id", "email"])
     return {
@@ -56,10 +59,31 @@ export class shopSchemaService {
   }
 
   async signIn(data: ISignIn) {
-    const shop = await this.prismaService.shopSchema.findUnique({where: {email: data.email}})
-    if(!shop) throw new NotFoundException();
+    const shop = await this.prismaService.shopSchema.findUnique({ where: { email: data.email } })
+    if (!shop) throw new NotFoundException();
     const match = await bcrypt.compare(data.password, shop.password)
-    if(!match) throw new NotFoundException('Your password or Email is incorrect')
-    
+    if (!match) throw new NotFoundException('Your password or Email is incorrect')
+
+    const keyAccess = await crypto.randomBytes(64).toString('hex');
+    const keyRefresh = await crypto.randomBytes(64).toString('hex');
+
+    const { accessToken, refreshToken } = await this.keyToken.generateTokenPair({
+      payload: { id: shop.id, email: shop.email },
+      keyAccess,
+      keyRefresh
+    });
+
+    await this.keyToken.createKeyToken({
+      shopId: shop.id,
+      keyAccess,
+      keyRefresh,
+      refreshToken
+    });
+
+    return {
+      shop: getObjectWithKey(shop, ['name', "email"]),
+      accessToken,
+      refreshToken
+    }
   }
 }

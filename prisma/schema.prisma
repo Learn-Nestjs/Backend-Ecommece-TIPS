@@ -43,7 +43,8 @@ model keyToken {
   shopId String @db.ObjectId @unique
   keyAccess String 
   keyRefresh String 
-  refreshToken String[] @default([])
+  refreshTokensUsed String[] @default([])
+  refreshToken String
 }
 
 

@@ -8,11 +8,15 @@ export class KeyToken {
   constructor(private prismaService: PrismaService) {}
   async createKeyToken(data: CreateKeyToken) {
     try {
-      const keyToken = await this.prismaService.keyToken.create({
-        data,
-      });
-      return keyToken;
+      await this.prismaService.keyToken.upsert({
+        where: {
+          shopId: data.shopId
+        },
+        create: data,
+        update: data
+      })
     } catch (error) {
+      console.log('error :', error)
       throw new HttpException('Create key token fail', 500);
     }
   }
