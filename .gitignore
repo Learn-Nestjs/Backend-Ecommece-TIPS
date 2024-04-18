@@ -42,3 +42,6 @@ dev.env
 production.env
 
 credentials.json
+
+# log file
+loggingSystem.txt
