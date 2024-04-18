@@ -12,6 +12,7 @@ import { ShopSchemaModule } from './shop-schema/shop-schema.module';
 import { KeyTokenModule } from './key-token/key-token.module';
 import configuration from './config/configuration';
 import { ApiKeyMiddleware } from './common/middleware/api-key.middleware';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ApiKeyMiddleware } from './common/middleware/api-key.middleware';
     GoogleAuthModule,
     ShopSchemaModule,
     KeyTokenModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
@@ -44,6 +46,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(ApiKeyMiddleware)
+      .exclude("/shop-schema/sign-in")
       .forRoutes('*')
       ;
   }

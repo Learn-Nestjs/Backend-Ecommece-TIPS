@@ -28,10 +28,7 @@ async function bootstrap() {
   // prefix
 
   app.setGlobalPrefix('/v1/api', {
-    exclude: [
-      // { path: 'cat', method: RequestMethod.GET }
-      // exclude routes from the global prefix using the following construction
-    ],
+    exclude: ['auth'],
   });
 
   // swagger
