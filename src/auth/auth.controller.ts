@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Header, HttpCode, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Header, HttpCode, Post, Res, UseGuards } from '@nestjs/common';
 import { SignUpDto, SingInDto } from './dto';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
+import { AuthGuard } from './auth.guard';
+import { Public } from 'src/common/decorators';
 
 
 @ApiTags('auth')
@@ -15,6 +17,7 @@ export class AuthController {
         return await this.authService.signUp(signUpDto)
     }
 
+    @Public()
     @Post('/sign-in')
     @ApiOkResponse({status: 200, description: "Login successfull" })
     @HttpCode(200)
@@ -26,6 +29,6 @@ export class AuthController {
     @HttpCode(200)
     @ApiOkResponse({status: 200, description: "Logout successfull" })
     async logout(@Body() signInDto : SingInDto) {
-        return await this.authService.signIn(signInDto)
+        return await this.authService.logout(signInDto)
     }
 }

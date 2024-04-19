@@ -87,4 +87,8 @@ export class AuthService {
           refreshToken
         }
       }
+
+      async logout(data: ISignIn) {
+        
+      }
 }
