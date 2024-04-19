@@ -52,5 +52,5 @@ model apiKey {
   id String @id @default(auto()) @db.ObjectId @map("_id")
   key String @unique
   status Boolean @default(true)
-  permissions Permissions[]
+  permissions Permissions[] @default([])
 }
