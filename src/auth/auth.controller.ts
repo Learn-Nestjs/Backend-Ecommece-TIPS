@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, HttpCode, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Header, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { SignUpDto, SingInDto } from './dto';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -11,6 +11,7 @@ import { Public } from 'src/common/decorators';
 export class AuthController {
     constructor(private authService: AuthService ) {}
 
+    @Public()
     @Post('/sign-up')
     @ApiOkResponse({status: 201, description: "Create shop successfull" })
     async signUp(@Body() signUpDto : SignUpDto) {
@@ -28,7 +29,9 @@ export class AuthController {
     @Post('/logout')
     @HttpCode(200)
     @ApiOkResponse({status: 200, description: "Logout successfull" })
-    async logout(@Body() signInDto : SingInDto) {
-        return await this.authService.logout(signInDto)
+    async logout(@Req() req) {
+        const {id} = req.shop as {id: string}
+        return await this.authService.logout(id)
     }
+
 }

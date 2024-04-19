@@ -88,7 +88,8 @@ export class AuthService {
         }
       }
 
-      async logout(data: ISignIn) {
-        
+      async logout(shopId: string) {
+        console.log("Called ")
+        return await this.keyToken.removeKeyByShopId(shopId)
       }
 }
