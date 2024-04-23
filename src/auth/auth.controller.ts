@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Head, Header, Headers, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { SignUpDto, SingInDto } from './dto';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -34,4 +34,12 @@ export class AuthController {
         return await this.authService.logout(id)
     }
 
+    @Post('/refresh-token')
+    @HttpCode(200)
+    @ApiOkResponse({status: 200, description: "Logout successfull" })
+    async refreshToken(@Req() req, @Headers('authorization') authorization : string){
+        const shop = req.shop as {id: string, email: string};
+        const refreshToken = authorization.split(' ')[1];
+        return await this.authService.refreshToken(shop, refreshToken)
+    }
 }
