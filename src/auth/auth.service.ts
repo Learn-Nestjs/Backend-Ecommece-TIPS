@@ -22,14 +22,10 @@ export class AuthService {
         });
     
         if (holderShop) throw new ConflictException('Email has existin');
-    
-        const hashPassWork = await bcrypt.hash(data.password, 10);
-    
+
+        const dataCreated = data.provider ? data : {...data, password: await bcrypt.hash(data.password, 10)}
         const shop = await this.prismaService.shopSchema.create({
-          data: {
-            ...data,
-            password: hashPassWork
-          }
+          data: dataCreated
         });
     
         if (!shop) throw new ServerError('Create shop fail')
@@ -89,7 +85,6 @@ export class AuthService {
       }
 
       async logout(shopId: string) {
-        console.log("Called ")
         return await this.keyToken.removeKeyByShopId(shopId)
       }
 }

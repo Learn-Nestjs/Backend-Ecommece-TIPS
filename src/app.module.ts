@@ -14,7 +14,6 @@ import configuration from './config/configuration';
 import { ApiKeyMiddleware } from './common/middleware/api-key.middleware';
 import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './auth/auth.guard';
-import { GoogleStrategy } from './auth/strategy/google.strategy';
 
 @Module({
   imports: [
@@ -45,7 +44,6 @@ import { GoogleStrategy } from './auth/strategy/google.strategy';
       provide: APP_GUARD,
       useClass: AuthGuard
     },
-    // GoogleStrategy,
     AppService,
   ],
 })
@@ -53,7 +51,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(ApiKeyMiddleware)
-      .exclude('/auth', '/auth/google-redirect')
+      .exclude('/auth/google', '/auth/google-redirect')
       .forRoutes('*')
       ;
   }

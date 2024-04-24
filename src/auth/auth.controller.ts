@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
 import { Public } from 'src/common/decorators';
 import { GoogleOAuthGuard } from './AuthGuard/google.authGuard';
+import { ProviderAuth } from '@prisma/client';
 
 
 @ApiTags('auth')
@@ -13,15 +14,17 @@ export class AuthController {
     constructor(private authService: AuthService ) {}
 
     @Public()
-    @Get()
+    @Get('/google')
     @UseGuards(GoogleOAuthGuard)
     async googleAuth(@Request() req) {}
 
     @Public()
-    @Get('google-redirect')
+    @Get('/google-redirect')
     @UseGuards(GoogleOAuthGuard)
-    googleAuthRedirect(@Request() req) {
-      return {message: 'successfull'}
+    async googleAuthRedirect(@Request() req) {
+      const {email, firstName, lastName, picture} = req.user as {email: string, firstName? : string, lastName ? : string, picture: string};
+      const data = {email: email, name: (firstName || "") + (lastName || "" ), avatar: picture, provider: ProviderAuth.GOOGLE}
+      return this.authService.signUp(data)
     }
 
     @Public()

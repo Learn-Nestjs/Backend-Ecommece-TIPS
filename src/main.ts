@@ -28,7 +28,7 @@ async function bootstrap() {
   // prefix
 
   app.setGlobalPrefix('/v1/api', {
-    exclude: ['auth'],
+    exclude: [':auth*'],
   });
 
   // swagger

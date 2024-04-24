@@ -26,14 +26,21 @@ enum Permissions {
   SHOPPING
 }
 
+enum ProviderAuth {
+  GOOGLE
+  FACEBOOK
+}
+
 model shopSchema {
   id String @id @default(auto()) @db.ObjectId @map("_id")
   name String 
   email String @unique
-  password String 
+  password String ?
+  avatar String ?
   status ShopStatus @default(INACTIVE)
   verify Boolean @default(false)
   roles UserRoleType[] @default([])
+  provider ProviderAuth ?
   keyToken keyToken ?
 }
 
