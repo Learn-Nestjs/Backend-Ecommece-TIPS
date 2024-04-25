@@ -26,6 +26,12 @@ enum Permissions {
   SHOPPING
 }
 
+enum ProductType {
+  ELECTRONICS
+  CLOTHING
+  FURNITURE
+}
+
 enum ProviderAuth {
   GOOGLE
   FACEBOOK
@@ -42,6 +48,7 @@ model shopSchema {
   roles UserRoleType[] @default([])
   provider ProviderAuth ?
   keyToken keyToken ?
+  products products[]
 }
 
 model keyToken {
@@ -60,4 +67,31 @@ model apiKey {
   key String @unique
   status Boolean @default(true)
   permissions Permissions[] @default([])
+}
+
+model products {
+  id String @id @default(auto()) @db.ObjectId @map("_id")
+  productName String
+  productThumb String
+  productDescription String
+  productPrice Float
+  productQuantity Int
+  productType ProductType
+  productAttributes Json  
+  shop shopSchema @relation(fields: [shopId], references: [id] )
+  shopId String @db.ObjectId
+}
+
+model clothingProduct  {
+  id String @id @default(auto()) @db.ObjectId @map("_id")
+  brand String
+  size String
+  material String
+}
+
+model electronicProduct  {
+  id String @id @default(auto()) @db.ObjectId @map("_id")
+  manufacturer String
+  model String
+  color String
 }
