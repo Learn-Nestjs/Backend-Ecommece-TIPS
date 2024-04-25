@@ -51,6 +51,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(ApiKeyMiddleware)
+      .exclude('/auth/google', '/auth/google-redirect')
       .forRoutes('*')
       ;
   }
