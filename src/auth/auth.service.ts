@@ -5,7 +5,7 @@ import { KeyToken } from 'src/key-token/key-token';
 import { getObjectWithKey } from 'src/common/libs';
 import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt'
-import { ServerError } from 'src/common/exception';
+import { Forbidden, ServerError } from 'src/common/exception';
 
 @Injectable()
 export class AuthService {
@@ -87,4 +87,42 @@ export class AuthService {
       async logout(shopId: string) {
         return await this.keyToken.removeKeyByShopId(shopId)
       }
+
+      async refreshToken(shop: {id: string, email: string} , curentToken: string) {
+        const keyToken = await this.prismaService.keyToken.findFirst({
+          where: {shopId: shop.id}
+        })
+
+        // Không cần check xem keyToken có tồn tại ko nữa vì chắc chắn có nếu đi qua được auth.guard
+        // Check xem refreshToken này đã dùng chưa, và có là refresh-token hiện tại ko
+        if(keyToken.refreshTokensUsed.includes(curentToken) && keyToken.refreshToken !== curentToken) {
+          // xóa keyToken
+          await this.prismaService.keyToken.delete({where: {id: keyToken.id}})
+          throw new Forbidden("Something went wrong, let's re-login")
+        }
+        
+        const { accessToken, refreshToken } = await this.keyToken.generateTokenPair({
+            payload: { id: shop.id, email: shop.email },
+            keyAccess: keyToken.keyAccess ,
+            keyRefresh: keyToken.keyRefresh
+          });
+          
+          // cập nhật lại keyToken
+          await this.prismaService.keyToken.update({
+            where: {
+              id: keyToken.id
+            },
+            data: {
+              refreshToken,
+              refreshTokensUsed: [...keyToken.refreshTokensUsed, curentToken]
+            }
+          })
+          
+          return {
+            shop,
+            accessToken,
+            refreshToken
+          }
+        }
+
 }
