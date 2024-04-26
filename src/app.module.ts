@@ -14,6 +14,7 @@ import configuration from './config/configuration';
 import { ApiKeyMiddleware } from './common/middleware/api-key.middleware';
 import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './auth/auth.guard';
+import { MailServiceModule } from './mail-service/mail-service.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AuthGuard } from './auth/auth.guard';
     ShopSchemaModule,
     KeyTokenModule,
     AuthModule,
+    MailServiceModule,
   ],
   controllers: [AppController],
   providers: [
