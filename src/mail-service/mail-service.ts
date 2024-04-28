@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer'
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { Options } from 'nodemailer/lib/mailer';
+import * as EmailTemplate from "email-templates"
+import * as path from 'path'
 @Injectable()
 export class MailService {
     private readonly mailer: nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
@@ -24,15 +26,24 @@ export class MailService {
 
     async sendMail(data: Options) {
         try {
-            const info = await this.mailer.sendMail({
+            const email = new EmailTemplate();
+            const emailRender = await email
+            .render(`${__dirname}/emails/mars/html`, {
+              name: 'Dncuong',
+              linkVerify: "http://localhost:3000/verify-email"
+            })
+            await this.mailer.sendMail({
                 from: this.configService.get<string>('DEFAULT_MAIL_FROM'),
                 to: data.to, 
                 subject: data.subject,
-                html: data.html,
+                html: emailRender,
                 attachments: data.attachments
             });
+
         } catch (error) {
-            throw new BadRequestException("Send mail error")
+            // log file not throw ra loi
+            console.log("error :", error)
+            // throw new BadRequestException("Send mail error")
         }
 
     }

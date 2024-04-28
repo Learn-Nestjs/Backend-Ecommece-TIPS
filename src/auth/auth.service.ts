@@ -6,12 +6,14 @@ import { getObjectWithKey } from 'src/common/libs';
 import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt'
 import { Forbidden, ServerError } from 'src/common/exception';
+import { MailService } from 'src/mail-service/mail-service';
 
 @Injectable()
 export class AuthService {
     constructor(
         private prismaService: PrismaService,
         private keyToken: KeyToken,
+        private mailService : MailService
       ) { }
     
       async signUp(data: ISignUp) {
@@ -76,6 +78,7 @@ export class AuthService {
           keyRefresh,
           refreshToken
         });
+        await this.mailService.sendMail({to:"dinhcuongnd2001@gmail.com", subject: "Verify Email"})
     
         return {
           shop: getObjectWithKey(shop, ['name', "email"]),
