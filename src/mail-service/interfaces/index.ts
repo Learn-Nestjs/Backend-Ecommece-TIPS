@@ -1,9 +1,8 @@
-export interface ISendMail {
-    mailTo: string;
-    subject: string;
-    html: string;
-    attachment?: {
-        filename : string;
-        content: string | Buffer
+import { Options } from 'nodemailer/lib/mailer';
+
+export interface ISendMail extends Options {
+    token: string,
+    templateData : {
+        name: string
     }
 }

@@ -5,6 +5,6 @@ export interface ISignUp {
   email: string;
   password?: string;
   provider?: ProviderAuth;
-  avatat?: string;
+  avatar?: string;
 }
 export interface ISignIn extends Pick<ISignUp, 'email' | 'password'> {}

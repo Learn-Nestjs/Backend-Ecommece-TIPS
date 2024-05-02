@@ -40,6 +40,12 @@ export class AuthService {
           keyAccess,
           keyRefresh
         });
+
+        if(!data.provider) {
+          await this.mailService.sendMailToVerifyEmail({to:data.email, templateData: {
+            name: data.name
+          }, token: keyAccess})
+        }
     
         await this.keyToken.createKeyToken({
           shopId: shop.id,
@@ -49,7 +55,7 @@ export class AuthService {
         });
     
     
-        const shopData = getObjectWithKey(shop, ["id", "email"])
+        const shopData = getObjectWithKey(shop, ["id", "email", "verify"])
         return {
           shop: shopData,
           accessToken,
@@ -78,10 +84,9 @@ export class AuthService {
           keyRefresh,
           refreshToken
         });
-        await this.mailService.sendMail({to:"dinhcuongnd2001@gmail.com", subject: "Verify Email"})
-    
+
         return {
-          shop: getObjectWithKey(shop, ['name', "email"]),
+          shop: getObjectWithKey(shop, ['name', "email", "verify"]),
           accessToken,
           refreshToken
         }

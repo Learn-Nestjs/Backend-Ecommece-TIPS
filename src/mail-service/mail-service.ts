@@ -1,10 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer'
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import { Options } from 'nodemailer/lib/mailer';
 import * as EmailTemplate from "email-templates"
-import * as path from 'path'
+import { ISendMail } from './interfaces';
+import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class MailService {
     private readonly mailer: nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
@@ -24,18 +24,21 @@ export class MailService {
         this.mailer = transporter;
     }
 
-    async sendMail(data: Options) {
+    async sendMailToVerifyEmail(data: ISendMail) {
         try {
             const email = new EmailTemplate();
             const emailRender = await email
+
+            
             .render(`${__dirname}/emails/mars/html`, {
-              name: 'Dncuong',
-              linkVerify: "http://localhost:3000/verify-email"
+              name: data.templateData.name,
+              linkVerify: `${this.configService.get<string>('FE_HOST')}verify-email?token=${data.token}`
             })
+
             await this.mailer.sendMail({
                 from: this.configService.get<string>('DEFAULT_MAIL_FROM'),
                 to: data.to, 
-                subject: data.subject,
+                subject: "Verify Your Email",
                 html: emailRender,
                 attachments: data.attachments
             });
