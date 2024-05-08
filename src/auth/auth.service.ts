@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ISignIn, ISignUp } from './interfaces/shop.interface';
+import { ISignIn, ISignInWithThirdParty, ISignUp } from './interfaces/shop.interface';
 import { KeyToken } from 'src/key-token/key-token';
 import { getObjectWithKey } from 'src/common/libs';
 import * as crypto from 'crypto';
@@ -18,7 +18,6 @@ export class AuthService {
 
   async signUp(data: ISignUp) {
     try {
-
       const holderShop = await this.prismaService.shopSchema.findFirst({
         where: {
           email: data.email,
@@ -27,42 +26,24 @@ export class AuthService {
 
       if (holderShop) throw new ConflictException('Email has existin');
 
-      const dataCreated = data.provider ? data : { ...data, password: await bcrypt.hash(data.password, 10) }
       const shop = await this.prismaService.shopSchema.create({
-        data: dataCreated
+        data : { ...data, password: await bcrypt.hash(data.password, 10) }
       });
 
       if (!shop) throw new ServerError('Create shop fail')
 
-      const keyAccess = await crypto.randomBytes(64).toString('hex');
-      const keyRefresh = await crypto.randomBytes(64).toString('hex');
-
-      const { accessToken, refreshToken } = await this.keyToken.generateTokenPair({
-        payload: { id: shop.id, email: shop.email },
-        keyAccess,
-        keyRefresh
-      });
-
-      if (!data.provider) {
-        await this.mailService.sendMailToVerifyEmail({
+      const key = await crypto.randomBytes(64).toString('hex');
+      const token = await this.keyToken.generateTokenVerifyEmail({payload: {id: shop.id, email: shop.email}, key})
+      
+      await this.mailService.sendMailToVerifyEmail({
           to: data.email, templateData: {
             name: data.name
-          }, token: keyAccess
-        })
-      }
-
-      await this.keyToken.createKeyToken({
-        shopId: shop.id,
-        keyAccess,
-        keyRefresh,
-        refreshToken
-      });
+          }, token
+      })
 
       const shopData = getObjectWithKey(shop, ["id", "email", "verify"])
       return {
         shop: shopData,
-        accessToken,
-        refreshToken
       }
 
     } catch (error) {
@@ -100,6 +81,49 @@ export class AuthService {
       }
     } catch (error) {
       throw new Forbidden('Some thing went wrong, please login again!')
+    }
+  }
+
+  async singInWithThirdParty(data : ISignInWithThirdParty) {
+    try {
+      const holderShop = await this.prismaService.shopSchema.findFirst({
+        where: {
+          email: data.email,
+        },
+      });
+
+      if (holderShop) throw new ConflictException('Email has existin');
+
+      const shop = await this.prismaService.shopSchema.create({
+        data
+      });
+
+      if (!shop) throw new ServerError('Create shop fail')
+
+      const keyAccess = await crypto.randomBytes(64).toString('hex');
+      const keyRefresh = await crypto.randomBytes(64).toString('hex');
+
+      const { accessToken, refreshToken } = await this.keyToken.generateTokenPair({
+        payload: { id: shop.id, email: shop.email },
+        keyAccess,
+        keyRefresh
+      });
+
+      await this.keyToken.createKeyToken({
+        shopId: shop.id,
+        keyAccess,
+        keyRefresh,
+        refreshToken
+      });
+
+      const shopData = getObjectWithKey(shop, ["id", "email", "verify"])
+      return {
+        shop: shopData,
+        accessToken,
+        refreshToken
+      }
+    } catch (error) {
+      throw new ServerError(`Login with ${data.provider.toLowerCase()} fail`);
     }
   }
 

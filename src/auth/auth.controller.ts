@@ -23,7 +23,7 @@ export class AuthController {
     async googleAuthRedirect(@Request() req) {
       const {email, firstName, lastName, picture} = req.user as {email: string, firstName? : string, lastName ? : string, picture: string};
       const data = {email: email, name: (firstName || "") + (lastName || "" ), avatar: picture, provider: ProviderAuth.GOOGLE}
-      return this.authService.signUp(data)
+      return this.authService.singInWithThirdParty(data)
     }
 
     @Public()

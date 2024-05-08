@@ -1,11 +1,11 @@
 import { PrismaService } from './../prisma/prisma.service';
 import { HttpException, Injectable } from '@nestjs/common';
-import { CreateKeyToken, IGenerateTokenPair } from './interfaces';
+import { CreateKeyToken, IGenTokenVerifyEmail, IGenerateTokenPair } from './interfaces';
 import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class KeyToken {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private prismaService: PrismaService) { }
   async createKeyToken(data: CreateKeyToken) {
     try {
       await this.prismaService.keyToken.upsert({
@@ -32,6 +32,11 @@ export class KeyToken {
     return { accessToken, refreshToken };
   }
 
+  async generateTokenVerifyEmail(data: IGenTokenVerifyEmail) {
+    const { key, payload } = data;
+    return jwt.sign(payload, key, { expiresIn: '2h' })
+  }
+
   async removeKeyByShopId(shopId: string) {
     try {
       await this.prismaService.keyToken.delete({
@@ -39,7 +44,7 @@ export class KeyToken {
           shopId,
         },
       });
-      return {message: "Logout successfully"}
+      return { message: "Logout successfully" }
     } catch (error) {
       throw new HttpException('Something went wrong', 500);
     }
