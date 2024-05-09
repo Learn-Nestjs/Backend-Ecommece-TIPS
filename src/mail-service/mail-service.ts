@@ -4,7 +4,7 @@ import * as nodemailer from 'nodemailer'
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import * as EmailTemplate from "email-templates"
 import { ISendMail } from './interfaces';
-import { PrismaService } from 'src/prisma/prisma.service';
+import * as jwt from 'jsonwebtoken'
 @Injectable()
 export class MailService {
     private readonly mailer: nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
@@ -26,13 +26,13 @@ export class MailService {
 
     async sendMailToVerifyEmail(data: ISendMail) {
         try {
+            const key = this.configService.get<string>('SECRET_HASH')
+            const token = jwt.sign({email: data.to}, key)
             const email = new EmailTemplate();
             const emailRender = await email
-
-            
             .render(`${__dirname}/emails/mars/html`, {
               name: data.templateData.name,
-              linkVerify: `${this.configService.get<string>('FE_HOST')}verify-email?token=${data.token}`
+              linkVerify: `${this.configService.get<string>('FE_HOST')}verify-email?token=${token}`
             })
 
             await this.mailer.sendMail({

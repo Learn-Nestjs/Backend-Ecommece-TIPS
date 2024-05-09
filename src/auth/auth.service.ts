@@ -1,19 +1,22 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ISignIn, ISignInWithThirdParty, ISignUp } from './interfaces/shop.interface';
+import { ISignIn, ISignInWithThirdParty, ISignUp, IVerifyOrResendEmail } from './interfaces/shop.interface';
 import { KeyToken } from 'src/key-token/key-token';
 import { getObjectWithKey } from 'src/common/libs';
 import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt'
-import { Forbidden, ServerError } from 'src/common/exception';
+import * as jwt from 'jsonwebtoken'
+import { CustomeError, Forbidden, ServerError } from 'src/common/exception';
 import { MailService } from 'src/mail-service/mail-service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prismaService: PrismaService,
     private keyToken: KeyToken,
-    private mailService: MailService
+    private mailService: MailService,
+    private readonly configService: ConfigService
   ) { }
 
   async signUp(data: ISignUp) {
@@ -31,14 +34,12 @@ export class AuthService {
       });
 
       if (!shop) throw new ServerError('Create shop fail')
-
-      const key = await crypto.randomBytes(64).toString('hex');
-      const token = await this.keyToken.generateTokenVerifyEmail({payload: {id: shop.id, email: shop.email}, key})
       
-      await this.mailService.sendMailToVerifyEmail({
+      // có thể bỏ await để tránh việc chờ gửi mail.
+      this.mailService.sendMailToVerifyEmail({
           to: data.email, templateData: {
             name: data.name
-          }, token
+          }
       })
 
       const shopData = getObjectWithKey(shop, ["id", "email", "verify"])
@@ -47,7 +48,7 @@ export class AuthService {
       }
 
     } catch (error) {
-      throw new ServerError('Sign Up Fail');
+      throw new CustomeError(error.message || 'Sign Up Fail', error.code || 500);
     }
   }
 
@@ -80,7 +81,7 @@ export class AuthService {
         refreshToken
       }
     } catch (error) {
-      throw new Forbidden('Some thing went wrong, please login again!')
+      throw new CustomeError(error.message || 'Some thing went wrong, please login again!', error.code || 500);
     }
   }
 
@@ -123,7 +124,7 @@ export class AuthService {
         refreshToken
       }
     } catch (error) {
-      throw new ServerError(`Login with ${data.provider.toLowerCase()} fail`);
+      throw new CustomeError(error.message || `Login with ${data.provider.toLowerCase()} fail`, error.code || 500);      
     }
   }
 
@@ -131,8 +132,7 @@ export class AuthService {
     try {
       return await this.keyToken.removeKeyByShopId(shopId)
     } catch (error) {
-      throw new ServerError("Something went wrong!");
-
+      throw new CustomeError(error.message || "Something went wrong!", error.code || 500);      
     }
   }
 
@@ -173,8 +173,30 @@ export class AuthService {
         refreshToken
       }
     } catch (error) {
-      throw new ServerError("Refresh Token Fail!")
+      throw new CustomeError(error.message || "Refresh Token Fail!", error.code || 500);      
     }
   }
 
+  async verifyOrResendEmail(data: IVerifyOrResendEmail) {
+    try {
+      const {token, resend, userId} = data;
+      const secretHash = this.configService.get<string>('SECRET_HASH')
+      if(resend) {
+        // resend an email to verify
+        const {email, verify, name} = await this.prismaService.shopSchema.findUnique({where: {id: userId}})
+        if(verify) return {message: "The account is verified"}
+        await this.mailService.sendMailToVerifyEmail({to: email, templateData: {name: name}})
+        return;
+      }
+      // verify email
+      try {
+        const {email} = jwt.verify(token, secretHash) as {email: string}
+        await this.prismaService.shopSchema.update({where:{email}, data: {verify: true}})
+      } catch (error) {
+        throw new UnauthorizedException("Token expired or wrong")
+      }
+    } catch (error) {
+      throw new CustomeError(error.message || 'Verify email is fail', error.code || 500);
+    }
+  }
 }

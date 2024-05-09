@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Headers, HttpCode, Post, Req, Request, Res, UseGuards } from '@nestjs/common';
-import { SignUpDto, SingInDto } from './dto';
+import { SignUpDto, SingInDto, VerifyEmailDto } from './dto';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { Public } from 'src/common/decorators';
@@ -56,5 +56,13 @@ export class AuthController {
         const shop = req.shop as {id: string, email: string};
         const refreshToken = authorization.split(' ')[1];
         return await this.authService.refreshToken(shop, refreshToken)
+    }
+
+    @Public()
+    @Post('/verify-email')
+    @ApiOkResponse({status: 200, description: "Verify success" })
+    @HttpCode(200)
+    async verifyOrResendEmail(@Body() verifyEmailDto : VerifyEmailDto) {
+        return await this.authService.verifyOrResendEmail(verifyEmailDto)
     }
 }

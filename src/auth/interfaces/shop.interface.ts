@@ -13,3 +13,9 @@ export interface ISignInWithThirdParty {
   provider: ProviderAuth;
   avatar?: string;
 }
+
+export interface IVerifyOrResendEmail {
+  token: string;
+  resend?: boolean
+  userId?: string;
+}
