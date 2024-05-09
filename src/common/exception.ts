@@ -25,3 +25,9 @@ export class ServerError extends HttpException {
     super(message, HttpStatus.INTERNAL_SERVER_ERROR)
   }
 }
+
+export class CustomeError extends HttpException {
+  constructor(message = "error", code : number ) {
+    super(message, code)
+  }
+}

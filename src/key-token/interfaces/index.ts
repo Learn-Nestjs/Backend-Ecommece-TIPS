@@ -12,3 +12,7 @@ export interface IGenerateTokenPair extends Omit<CreateKeyToken, "shopId" | "ref
         email: string
     }
 }
+
+export interface IGenTokenVerifyEmail extends Pick<IGenerateTokenPair, "payload"> {
+    key: string;
+}
